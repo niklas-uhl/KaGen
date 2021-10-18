@@ -10,7 +10,7 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-project(kagen)
+project(kagen LANGUAGES CXX)
 #set_target_properties(kagen PROPERTIES LINKER_LANGUAGE CXX)
 
 # prohibit in-source builds
@@ -37,8 +37,6 @@ option(KAGEN_BINARY_OUTPUT "Output edge lists in binary format" ON)
 set(KAGEN_DEFINITIONS "")
 set(KAGEN_INCLUDE_DIRS 
   ${PROJECT_SOURCE_DIR}/app
-  ${PROJECT_SOURCE_DIR}/extlib/sampling/sampling
-  ${PROJECT_SOURCE_DIR}/extlib/libmorton/libmorton/include
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/generators
   ${PROJECT_SOURCE_DIR}/include/generators/barabassi
@@ -55,23 +53,21 @@ set(KAGEN_INCLUDE_DIRS
 
 if(NOT MSVC)
   # enable warnings
+  set(KAGEN_PROPERTIES "")
   if(CMAKE_BUILD_TYPE MATCHES Debug)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g -W -Wall -Wextra -fPIC -fpermissive")
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -g -W -Wall -Wextra -fPIC -fpermissive")
   endif()
-
-  # enable more warnings
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic")
-
-  # remove unwanted warnings
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
+  list(APPEND KAGEN_PROPERTIES "-W -Wall -Wextra -fPIC -fpermissive -Wpedantic")
+  list(APPEND KAGEN_PROPERTIES "-Wno-unused-local-typedefs -Wno-unused-variable -Wno-type-limits -Wno-sign-compare")
 
   # enable -march=native on Debug and Release builds
   include(CheckCXXCompilerFlag)
   check_cxx_compiler_flag("-march=native" KAGEN_HAS_MARCH_NATIVE)
   if(KAGEN_HAS_MARCH_NATIVE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    #TODO fix this
+    #list(APPEND KAGEN_PROPERTIES "-march=native")
   endif()
 
   # remove -rdynamic from linker flags (smaller binaries which cannot be loaded
@@ -223,15 +219,15 @@ if(KAGEN_USE_LTO)
 endif()
 
 if(KAGEN_OUTPUT_EDGES)
-  set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DOUTPUT_EDGES")
+    list(APPEND KAGEN_DEFINITIONS "-DOUTPUT_EDGES")
   if (KAGEN_SINGLE_OUTPUT)
-    set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DSINGLE_LIST")
+      list(APPEND KAGEN_DEFINITIONS "-DSINGLE_LIST")
   endif()
   if (KAGEN_OMIT_HEADER)
-    set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DOMIT_HEADER")
+      list(APPEND KAGEN_DEFINITIONS "-DOMIT_HEADER")
   endif()
   if (KAGEN_BINARY_OUTPUT)
-    set(KAGEN_DEFINITIONS "${KAGEN_DEFINITIONS} -DBINARY_OUT")
+      list(APPEND KAGEN_DEFINITIONS "-DBINARY_OUT")
   endif()
 endif()
 
@@ -241,8 +237,8 @@ if(APPLE)
   set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KAGEN_DEFINITIONS}")
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KAGEN_DEFINITIONS}")
+#message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 ###############################################################################
 
@@ -258,26 +254,20 @@ endmacro(set_join)
 ###############################################################################
 # find MPI
 find_package(MPI REQUIRED)
-if(MPI_FOUND)
-  include_directories(SYSTEM ${MPI_INCLUDE_PATH})
-else()
-  message(STATUS "Could not find MPI library")
-endif()
 
 # find CGAL
 set(CGAL_DONT_OVERRIDE_CMAKE_FLAGS TRUE CACHE BOOL "Force CGAL to maintain CMAKE flags")
-find_package(CGAL)
-if(CGAL_FOUND)
-  include(${CGAL_USE_FILE})
-else()
-  message(STATUS "Could not find CGAL library")
-endif()
+find_package(CGAL REQUIRED)
+find_package(GMP REQUIRED)
 
 # use sampling lib
 add_subdirectory(extlib/sampling)
-set(KAGEN_LINK_LIBRARIES sampling "${KAGEN_LINK_LIBRARIES}")
-set(KAGEN_LINK_LIBRARIES spooky "${KAGEN_LINK_LIBRARIES}")
 
+add_library(kagen-core INTERFACE)
+target_link_libraries(kagen-core INTERFACE MPI::MPI_CXX sampling CGAL::CGAL spooky)
+target_include_directories(kagen-core INTERFACE ${KAGEN_INCLUDE_DIRS})
+target_compile_definitions(kagen-core INTERFACE ${KAGEN_DEFINITIONS})
+target_compile_options(kagen-core INTERFACE ${KAGEN_PROPERTIES})
 ################################################################################
 ### Build Macros
 

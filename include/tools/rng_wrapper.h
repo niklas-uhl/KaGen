@@ -11,7 +11,7 @@
 
 #include <random>
 
-#include "methodR.hpp"
+#include <sampling/methodR.hpp>
 
 namespace kagen {
 

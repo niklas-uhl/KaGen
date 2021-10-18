@@ -21,8 +21,8 @@
 #include "geometry.h"
 #include "rng_wrapper.h"
 #include "sorted_mersenne.h"
-#include "hash.hpp"
-#include "methodD.hpp"
+#include "sampling/hash.hpp"
+#include "sampling/methodD.hpp"
 
 namespace kagen {
 

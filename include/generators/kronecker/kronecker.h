@@ -19,7 +19,7 @@
 #include "definitions.h"
 #include "generator_config.h"
 #include "generator_io.h"
-#include "hash.hpp"
+#include "sampling/hash.hpp"
 
 #include "utils.h"
 #include "user_settings.h"

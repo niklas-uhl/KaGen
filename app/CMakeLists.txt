@@ -8,7 +8,10 @@
 # All rights reserved. Published under the BSD-2 license in the LICENSE file.
 ################################################################################
 
-build_mpi_prog(kagen)
-build_mpi_prog(interface_test)
+add_executable(kagen kagen.cpp)
+target_link_libraries(kagen PRIVATE kagen-core)
+
+add_executable(interface_test interface_test.cpp)
+target_link_libraries(interface_test PRIVATE kagen-core)
 
 ################################################################################

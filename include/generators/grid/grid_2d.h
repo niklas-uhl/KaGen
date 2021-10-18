@@ -17,7 +17,7 @@
 #include "generator_config.h"
 #include "generator_io.h"
 #include "rng_wrapper.h"
-#include "hash.hpp"
+#include "sampling/hash.hpp"
 
 namespace kagen {
 

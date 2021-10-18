@@ -22,7 +22,7 @@
 // #include "morton2D.h"
 #include "rng_wrapper.h"
 #include "mersenne.h"
-#include "hash.hpp"
+#include "sampling/hash.hpp"
 
 namespace kagen {
 
