@@ -58,7 +58,6 @@ find_package(CGAL REQUIRED)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/extlib/sampling EXCLUDE_FROM_ALL)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/extlib/libmorton EXCLUDE_FROM_ALL)
 
-find_package(CGAL)
 set(kagen_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(KAGEN_TARGET_INCLUDE_DIRS
   ${kagen_SOURCE_DIR}/extlib/sampling/sampling
