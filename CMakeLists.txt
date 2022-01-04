@@ -8,7 +8,7 @@
 # All rights reserved. Published under the BSD-2 license in the LICENSE file.
 ################################################################################
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.14)
 
 project(kagen LANGUAGES CXX)
 #set_target_properties(kagen PROPERTIES LINKER_LANGUAGE CXX)
@@ -52,6 +52,7 @@ endif()
 find_package(MPI REQUIRED)
 
 # find CGAL
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL REQUIRED)
 
 # use sampling lib and libmorton
@@ -84,7 +85,6 @@ target_link_libraries(libkagen INTERFACE
 target_compile_definitions(libkagen INTERFACE ${KAGEN_DEFINITIONS})
 target_compile_definitions(libkagen INTERFACE BOOST_BIND_GLOBAL_PLACEHOLDERS)
 check_cxx_compiler_flag("-march=native" KAGEN_MARCH_NATIVE)
-message(STATUS ${KAGEN_MARCH_NATIVE})
 if (KAGEN_MARCH_NATIVE)
     message(STATUS "Using -march=native")
     target_compile_options(libkagen INTERFACE "-march=native")
