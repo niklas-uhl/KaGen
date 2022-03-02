@@ -48,6 +48,8 @@ if(KAGEN_OUTPUT_EDGES)
   endif()
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+
 # find MPI
 find_package(MPI REQUIRED)
 
@@ -55,7 +57,17 @@ find_package(MPI REQUIRED)
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL REQUIRED)
 
+# find sparsehash
+find_package(sparsehash REQUIRED)
+
 # use sampling lib and libmorton
+find_package(MKL)
+if(MKL_FOUND)
+  set(SAMPLING_USE_MKL ON CACHE BOOL "Use MKL for sampling")
+else()
+  message(STATUS "MKL not found, therefore not using it")
+  set(SAMPLING_USE_MKL OFF CACHE BOOL "Use MKL for sampling")
+endif()
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/extlib/sampling EXCLUDE_FROM_ALL)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/extlib/libmorton EXCLUDE_FROM_ALL)
 
@@ -77,10 +89,11 @@ set(KAGEN_TARGET_INCLUDE_DIRS
   ${kagen_SOURCE_DIR}/interface/)
 add_library(libkagen INTERFACE)
 target_include_directories(libkagen SYSTEM INTERFACE ${KAGEN_TARGET_INCLUDE_DIRS})
-target_link_libraries(libkagen INTERFACE 
-    sampling 
-    tlx 
-    CGAL::CGAL 
+target_link_libraries(libkagen INTERFACE
+    sampling
+    tlx
+    CGAL::CGAL
+    sparsehash
     libmorton::libmorton spooky MPI::MPI_CXX)
 target_compile_definitions(libkagen INTERFACE ${KAGEN_DEFINITIONS})
 target_compile_definitions(libkagen INTERFACE BOOST_BIND_GLOBAL_PLACEHOLDERS)
